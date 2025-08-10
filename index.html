@@ -5,16 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOOD International Properties</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Dark Ambient with Glass & Accent Colors -->
-    <!-- Application Structure Plan: A single-page application designed as a premium real estate tool. The structure begins with the company's vision (Mission), showcases key data and featured properties (Portfolio), highlights core service offerings with AI tools (Services), presents a strategic market overview (Insights), outlines the client journey (Process), and concludes with a contact section. The single-page design provides an immersive flow, while a dynamic sidebar enables seamless navigation between sections. This is an ideal structure for a client-facing tool that needs to feel both professional and intuitive. -->
+    <!-- Application Structure Plan: A single-page application designed as a premium real estate tool. The structure begins with the company's vision (Mission), showcases key data and featured properties (Portfolio), highlights core service offerings with AI tools (Services), presents a strategic market overview (Insights), outlines a data-driven UAE investment case (UAE Comparison), guides the client journey (Process), and concludes with a contact section. The single-page design provides an immersive flow, while a dynamic sidebar enables seamless navigation between sections. This is an ideal structure for a client-facing tool that needs to feel both professional and intuitive. -->
     <!-- Visualization & Content Choices: 
         - Mission: JS-driven text reveal. Goal: Inform.
         - Portfolio: Animated counters via JS IntersectionObserver + requestAnimationFrame for key metrics. Grid of property cards. Goal: Impress/Organize.
         - Services: Animated progress bars via JS IntersectionObserver to show expertise level. Goal: Compare.
         - Insights: 2x2 grid layout for a market analysis framework. Goal: Organize/Analyze. Method: HTML/CSS grid.
+        - UAE Comparison: An interactive bar chart to compare investment metrics. Dropdown for user selection and dynamic text. Goal: Compare/Inform. Method: Chart.js.
         - AI Solutions: Condensed presentation of AI-powered features. Goal: Demonstrate. Method: Problem/Solution cards.
         - Process: Vertical timeline. Goal: Show Process. Method: HTML/CSS with flexbox.
     -->
@@ -53,10 +55,10 @@
             opacity: 1;
             transform: translateY(0);
         }
-        .nav-link.active div {
+        .nav-link.active .link-dot {
             background-color: #ffffff;
         }
-        .nav-link.active span {
+        .nav-link.active .link-text {
             font-weight: 600;
             color: #ffffff;
         }
@@ -66,6 +68,19 @@
         }
         @keyframes pulse-heart { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
         .animate-pulse-heart { animation: pulse-heart 2s ease-in-out infinite; }
+        .logo-placeholder {
+            background-image: url('https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/Untitled%20design%20(1).png-4aa02e04-325c-4bc7-8ee4-782359b32732?t=2024-06-25T14%3A58%3A30.292Z');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: invert(100%);
+        }
+        #sidebar-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .main-content-shifted {
+            margin-left: 256px;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -82,19 +97,41 @@
     </div>
 
     <div class="flex">
-        <aside id="sidebar" class="fixed inset-y-0 left-0 flex-col gap-3 sm:gap-4 py-6 px-3 items-center bg-transparent z-50 print:hidden hidden lg:flex"></aside>
+        <!-- New Navigation Sidebar with hover logic -->
+        <div id="sidebar-container" class="fixed top-0 left-0 bottom-0 z-50 md:block hidden">
+            <div id="sidebar" class="fixed top-4 bottom-4 left-4 w-64 bg-black/50 backdrop-blur-3xl border border-white/10 rounded-3xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out">
+                <div class="h-full flex flex-col p-6">
+                    <a href="#mission" class="flex items-center gap-4 mb-10 group nav-link">
+                        <div class="w-12 h-12 rounded-full glass-card flex items-center justify-center transition-all duration-300 group-hover:scale-105">
+                            <div class="w-10 h-10 rounded-full logo-placeholder"></div>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-semibold tracking-tight text-white group-hover:text-white/80 transition-colors duration-300">NOOD</h1>
+                            <p class="text-xs text-white/60 -mt-0.5">International Properties</p>
+                        </div>
+                    </a>
+                    <nav class="space-y-4">
+                        <!-- Navigation links will be rendered here -->
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-sidebar-toggle" class="fixed top-4 left-4 z-50 md:hidden p-3 bg-black/50 backdrop-blur-md rounded-xl border border-white/10 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+        </div>
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 md:hidden opacity-0 pointer-events-none transition-opacity duration-300"></div>
+        
 
-        <main class="relative z-10 flex flex-col items-center w-full min-h-screen sm:pl-20 md:pl-24 lg:pl-28">
+        <main id="main-content" class="relative z-10 flex flex-col items-center w-full min-h-screen">
             <div class="w-full max-w-7xl pt-20 pb-24 space-y-32 md:space-y-48">
 
                 <section id="mission" class="min-h-[80vh] flex items-center justify-center pt-24 pb-12">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 items-center w-full">
                         <div class="md:col-span-1 flex justify-center order-1 md:order-2">
                             <div class="w-48 h-48 md:w-64 md:h-64 rounded-full glass-card flex items-center justify-center border-2 border-white/10 hover:scale-105 transition-transform duration-500">
-                                <div class="text-center">
-                                    <span class="text-6xl">🏢</span>
-                                    <p class="text-white/40 text-xs font-light mt-2">NOOD Properties</p>
-                                </div>
+                                <div class="text-center w-full h-full rounded-full logo-placeholder"></div>
                             </div>
                         </div>
                         <div class="md:col-span-2 text-center md:text-left order-2 md:order-1">
@@ -140,6 +177,37 @@
                     <div id="insights-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
                 </section>
 
+                <section id="uae-comparison">
+                    <div class="text-center mb-16">
+                        <h2 class="text-sm font-light text-white/70 mb-3 uppercase tracking-widest">Data-Driven Analysis</h2>
+                        <p class="section-title text-white">Why Invest in the UAE?</p>
+                        <p class="mt-4 max-w-2xl mx-auto text-lg text-white/70 font-extralight">A direct comparison of key real estate metrics between the UAE and other major global investment hubs.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-8 space-y-8">
+                        <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                            <label for="country-select" class="text-sm font-light text-white/70">Compare against your home market:</label>
+                            <select id="country-select" class="w-full md:w-auto bg-white/10 text-white rounded-md p-2">
+                                <option value="UK">United Kingdom</option>
+                                <option value="USA">United States</option>
+                                <option value="Germany">Germany</option>
+                                <option value="China">China</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-8 border-t border-white/20">
+                            <div class="chart-container-wrapper">
+                                <h3 class="text-xl font-medium text-white mb-4 text-center">Investment Metrics</h3>
+                                <div class="chart-container w-full h-[300px] max-h-[400px]">
+                                    <canvas id="comparisonChart"></canvas>
+                                </div>
+                            </div>
+                            <div id="uae-advantages-container" class="space-y-6">
+                                <h3 class="text-xl font-medium text-white mb-4">Key Advantages of the UAE</h3>
+                                <p class="text-sm text-white/70">The UAE offers significant benefits for international investors. Our analysis highlights the core advantages that lead to superior returns and a more stable investment environment.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="ai-solutions">
                     <div class="text-center mb-16">
                         <h2 class="text-sm font-light text-white/70 mb-3 uppercase tracking-widest">Client Tools</h2>
@@ -150,6 +218,38 @@
                         <div id="ai-problems-container" class="glass-card rounded-2xl p-8 space-y-8"></div>
                     </div>
                 </section>
+                
+                <!-- New AI-Powered Sections -->
+                <section id="ai-prospectus" class="fade-in">
+                    <div class="text-center mb-16">
+                        <h2 class="text-sm font-light text-white/70 mb-3 uppercase tracking-widest">AI-Powered</h2>
+                        <p class="section-title text-white">Generate an Investment Prospectus ✨</p>
+                        <p class="mt-4 max-w-2xl mx-auto text-lg text-white/70 font-extralight">Instantly create a comprehensive and customized investment prospectus based on your specific criteria.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-8 space-y-6">
+                        <textarea id="prospectus-input" rows="4" class="w-full bg-white/10 text-white rounded-md p-4 placeholder-white/50" placeholder="e.g., 'Generate a prospectus for a luxury 4-bedroom villa in Dubai with a budget of $5M USD, focusing on rental yield and capital appreciation.'"></textarea>
+                        <button id="generate-prospectus-btn" class="w-full px-8 py-4 bg-white text-black font-light rounded-full hover:bg-gray-200 transition-transform duration-200 hover:scale-105">
+                            Generate Prospectus ✨
+                        </button>
+                        <div id="prospectus-output" class="text-white/80 p-4 rounded-md mt-4 whitespace-pre-wrap"></div>
+                    </div>
+                </section>
+
+                <section id="ai-insights-tool" class="fade-in">
+                    <div class="text-center mb-16">
+                        <h2 class="text-sm font-light text-white/70 mb-3 uppercase tracking-widest">AI-Powered</h2>
+                        <p class="section-title text-white">Strategic Market Insight Summarizer ✨</p>
+                        <p class="mt-4 max-w-2xl mx-auto text-lg text-white/70 font-extralight">Get a concise, expert summary of key investment points from any market analysis text.</p>
+                    </div>
+                    <div class="glass-card rounded-2xl p-8 space-y-6">
+                        <textarea id="insights-input" rows="4" class="w-full bg-white/10 text-white rounded-md p-4 placeholder-white/50" placeholder="Paste a market report, article, or analysis here..."></textarea>
+                        <button id="summarize-insights-btn" class="w-full px-8 py-4 bg-white text-black font-light rounded-full hover:bg-gray-200 transition-transform duration-200 hover:scale-105">
+                            Summarize Key Insights ✨
+                        </button>
+                        <div id="insights-output" class="text-white/80 p-4 rounded-md mt-4 whitespace-pre-wrap"></div>
+                    </div>
+                </section>
+                <!-- End of New AI-Powered Sections -->
 
                 <section id="process">
                     <div class="text-center mb-16">
@@ -171,7 +271,8 @@
                             Start Your Journey
                         </a>
                         <p class="mt-6 text-white/60 font-extralight">
-                            <span class="font-mono text-sm">info@noodproperties.com</span> • London, UK
+                            <span class="font-mono text-sm">Email: info@noodproperties.com</span><br>
+                            <span class="font-mono text-sm">Phone: +971567575075</span>
                         </p>
                     </div>
                 </section>
@@ -187,7 +288,10 @@
                     { id: "portfolio", title: "Portfolio" },
                     { id: "services", title: "Services" },
                     { id: "insights", title: "Insights" },
+                    { id: "uae-comparison", title: "UAE" },
                     { id: "ai-solutions", title: "AI Tools" },
+                    { id: "ai-prospectus", title: "Prospectus AI" },
+                    { id: "ai-insights-tool", title: "Summarizer AI" },
                     { id: "process", title: "Process" },
                     { id: "contact", title: "Contact" }
                 ],
@@ -222,12 +326,22 @@
                         { name: "Tech-Enabled Management", level: 91 }
                     ]
                 },
-insights: [
+                insights: [
                     { title: "Strengths", items: ["Global network and partnerships", "Expert, data-driven market insight", "Bespoke client solutions"], color: "green-400" },
                     { title: "Opportunities", items: ["Rising demand for foreign investment", "Tech to streamline transactions", "Growth in emerging markets"], color: "blue-400" },
                     { title: "Weaknesses", items: ["Establishing new brand recognition", "Manual, high-touch processes", "Limited capital for large projects"], color: "yellow-400" },
                     { title: "Threats", items: ["Market volatility", "Increased competition", "Regulatory changes"], color: "red-400" }
                 ],
+                uaeComparison: {
+                    metrics: ['Property Tax', 'Rental Yield', 'Capital Gains Tax'],
+                    data: {
+                        'UAE': { values: [0, 6, 0], facts: ['No property tax', 'High rental yields', 'No capital gains tax'] },
+                        'UK': { values: [3, 3, 28], facts: ['Up to 3% Stamp Duty', 'Lower average rental yield', 'Capital gains tax up to 28%'] },
+                        'USA': { values: [1, 2, 20], facts: ['Varying property tax (1% avg.)', 'Lower average rental yield', 'Capital gains tax up to 20%'] },
+                        'Germany': { values: [6.5, 3, 25], facts: ['Up to 6.5% transfer tax', 'Average rental yields of 3%', 'Capital gains tax up to 25%'] },
+                        'China': { values: [1.2, 1.5, 20], facts: ['Up to 1.2% property tax', 'Lower average rental yields', 'Capital gains tax up to 20%'] },
+                    }
+                },
                 aiSolutions: [
                     { pTitle: "Manual Property Valuation", pDesc: "Traditional valuations are slow, costly, and often outdated, leading to missed opportunities.", sTitle: "AI-Powered Valuation", sDesc: "Our AI engine analyzes millions of data points to provide instant, highly accurate property valuations." },
                     { pTitle: "Overwhelming Market Data", pDesc: "Investors are flooded with data, making it impossible to identify high-potential assets quickly.", sTitle: "Predictive Market Analysis", sDesc: "Our platform highlights properties and markets with the highest projected returns, personalized to your criteria." },
@@ -251,16 +365,20 @@ insights: [
                 }
             };
             
+            let comparisonChartInstance = null;
+
             function renderNavigation() {
                 const navContainer = document.getElementById('sidebar');
                 if (!navContainer) return;
-                navContainer.innerHTML = appData.navigation.map(item => `
-                    <a href="#${item.id}" title="${item.title}" class="nav-link w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 bg-white/10 backdrop-blur-sm border border-white/10 hover:bg-white/20 hover:scale-105 text-white">
-                        <span class="w-1.5 h-1.5 rounded-full bg-transparent"></span>
+                const navLinksContainer = navContainer.querySelector('nav');
+                navLinksContainer.innerHTML = appData.navigation.map(item => `
+                    <a href="#${item.id}" title="${item.title}" class="nav-link flex items-center space-x-3 text-white/70 hover:text-white transition-all duration-150">
+                        <div class="link-dot w-1.5 h-6 rounded-full bg-white/30 transition-colors duration-200"></div>
+                        <span class="link-text font-light">${item.title}</span>
                     </a>
                 `).join('');
             }
-            
+
             function renderHero() {
                 const { name, title, mission } = appData.hero;
                 document.getElementById('hero-name').textContent = name;
@@ -272,7 +390,7 @@ insights: [
                     setTimeout(() => document.getElementById('hero-mission').classList.add('opacity-100'), 400);
                 }, 200);
             }
-            
+
             function renderPortfolio() {
                 const statsContainer = document.getElementById('portfolio-stats-container');
                 statsContainer.innerHTML = appData.portfolio.stats.map((stat, i) => `
@@ -281,7 +399,7 @@ insights: [
                         <div class="text-white/70 font-medium">${stat.label}</div>
                     </div>
                 `).join('');
-                
+
                 const cardsContainer = document.getElementById('portfolio-cards-container');
                 cardsContainer.innerHTML = appData.portfolio.cards.map((card, i) => `
                     <div class="glass-card rounded-2xl p-6 flex flex-col fade-in" style="transition-delay: ${i * 150}ms;">
@@ -298,7 +416,7 @@ insights: [
                     </div>
                 `).join('');
             }
-            
+
             function renderServices() {
                 const createSkillSet = (containerId, title, skills) => {
                     const container = document.getElementById(containerId);
@@ -324,12 +442,12 @@ insights: [
                 };
                 createSkillSet('core-services-container', 'Core Services', appData.services.core);
                 createSkillSet('growth-services-container', 'AI & Tech Innovation', appData.services.growth);
-                
+
                 const aiContainer = document.getElementById('services-ai-container');
                 aiContainer.innerHTML = appData.aiSolutions.map((item, i) => `
                     <div class="glass-card rounded-xl p-6 flex flex-col fade-in" style="transition-delay: ${i * 100}ms;">
                         <h3 class="text-lg font-medium text-white mb-2">${item.sTitle}</h3>
-                        <p class="text-white/70 font-extralight text-sm">${item.sDesc}</p>
+                        <p class="text-sm text-white/70 font-light">${item.sDesc}</p>
                     </div>
                 `).join('');
             }
@@ -346,6 +464,79 @@ insights: [
                 `).join('');
             }
 
+            function renderUAEComparison() {
+                const selectEl = document.getElementById('country-select');
+                selectEl.innerHTML = Object.keys(appData.uaeComparison.data).filter(c => c !== 'UAE').map(country => `<option value="${country}">${country}</option>`).join('');
+
+                const updateChartAndFacts = () => {
+                    const selectedCountry = selectEl.value;
+                    const { metrics, data } = appData.uaeComparison;
+                    const uaeData = data['UAE'];
+                    const selectedCountryData = data[selectedCountry];
+
+                    if (comparisonChartInstance) {
+                        comparisonChartInstance.destroy();
+                    }
+
+                    const ctx = document.getElementById('comparisonChart');
+                    comparisonChartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: metrics,
+                            datasets: [
+                                {
+                                    label: 'UAE',
+                                    data: uaeData.values,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1,
+                                },
+                                {
+                                    label: selectedCountry,
+                                    data: selectedCountryData.values,
+                                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 1,
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: '#fff'
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { color: 'rgba(255,255,255,0.7)' },
+                                    grid: { color: 'rgba(255,255,255,0.1)' }
+                                },
+                                x: {
+                                    ticks: { color: 'rgba(255,255,255,0.7)' },
+                                    grid: { display: false }
+                                }
+                            }
+                        }
+                    });
+
+                    const advantagesContainer = document.getElementById('uae-advantages-container');
+                    advantagesContainer.innerHTML = `
+                        <h3 class="text-xl font-medium text-white mb-4">Key Advantages of the UAE</h3>
+                        <div class="space-y-4">
+                            ${uaeData.facts.map(fact => `<p class="text-sm text-white/70">➡️ ${fact}</p>`).join('')}
+                        </div>
+                    `;
+                };
+
+                selectEl.addEventListener('change', updateChartAndFacts);
+                updateChartAndFacts();
+            }
+
             function renderAiSolutions() {
                 const container = document.getElementById('ai-problems-container');
                 container.innerHTML = appData.aiSolutions.map((item, i) => `
@@ -360,6 +551,65 @@ insights: [
                         </div>
                     </div>
                 `).join('');
+            }
+            
+            async function callGeminiApi(prompt, outputElementId, buttonElementId) {
+                const outputEl = document.getElementById(outputElementId);
+                const buttonEl = document.getElementById(buttonElementId);
+                
+                outputEl.innerHTML = '<p class="text-white/50 animate-pulse">Generating...</p>';
+                buttonEl.disabled = true;
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = "" 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                let response = null;
+                let retries = 0;
+                while (retries < 3) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.status === 429) {
+                            const delay = Math.pow(2, retries) * 1000;
+                            await new Promise(res => setTimeout(res, delay));
+                            retries++;
+                        } else if (response.ok) {
+                            break;
+                        } else {
+                             const errorBody = await response.json();
+                             outputEl.innerHTML = `<p class="text-red-400">Error: ${errorBody.error.message}</p>`;
+                             buttonEl.disabled = false;
+                             return;
+                        }
+                    } catch (error) {
+                         outputEl.innerHTML = `<p class="text-red-400">Fetch error: ${error.message}</p>`;
+                         buttonEl.disabled = false;
+                         return;
+                    }
+                }
+
+                if (!response || !response.ok) {
+                     outputEl.innerHTML = `<p class="text-red-400">API call failed after multiple retries.</p>`;
+                     buttonEl.disabled = false;
+                     return;
+                }
+
+                const result = await response.json();
+                let generatedText = 'No text generated.';
+                try {
+                    generatedText = result.candidates[0].content.parts[0].text;
+                } catch (e) {
+                    generatedText = 'Error parsing response.';
+                }
+                outputEl.textContent = generatedText;
+                buttonEl.disabled = false;
             }
 
             function renderProcess() {
@@ -410,7 +660,7 @@ insights: [
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
                             const id = entry.target.id;
-                            document.querySelectorAll('#sidebar .nav-link').forEach(link => {
+                            document.querySelectorAll('#sidebar nav a').forEach(link => {
                                 link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
                             });
                         }
@@ -441,11 +691,70 @@ insights: [
                 }, stepTime);
             }
             
+            const sidebar = document.getElementById('sidebar');
+            const sidebarContainer = document.getElementById('sidebar-container');
+            const mainContent = document.getElementById('main-content');
+            const mobileToggle = document.getElementById('mobile-sidebar-toggle');
+            const overlay = document.getElementById('sidebar-overlay');
+            let isSidebarOpen = false;
+
+            if (sidebarContainer) {
+                sidebarContainer.addEventListener('mouseenter', () => {
+                    if (window.innerWidth >= 768) {
+                        isSidebarOpen = true;
+                        sidebar.classList.remove('-translate-x-full');
+                        mainContent.classList.remove('md:ml-0');
+                        mainContent.classList.add('md:ml-64');
+                    }
+                });
+                sidebarContainer.addEventListener('mouseleave', () => {
+                    if (window.innerWidth >= 768) {
+                        isSidebarOpen = false;
+                        setTimeout(() => {
+                            if (!isSidebarOpen) {
+                                sidebar.classList.add('-translate-x-full');
+                                mainContent.classList.remove('md:ml-64');
+                                mainContent.classList.add('md:ml-0');
+                            }
+                        }, 500);
+                    }
+                });
+            }
+            
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', () => {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('pointer-events-none', 'opacity-0');
+                    overlay.classList.add('opacity-100');
+                });
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.remove('opacity-100');
+                    overlay.classList.add('pointer-events-none', 'opacity-0');
+                });
+            }
+
+            document.getElementById('generate-prospectus-btn').addEventListener('click', () => {
+                const input = document.getElementById('prospectus-input').value;
+                const prompt = `Act as a senior investment analyst for NOOD International Properties. Write a concise, professional investment prospectus based on the following criteria: "${input}". The prospectus should highlight a property's potential, key financials, and strategic advantages. Structure the response with clear headings: 'Property Profile', 'Investment Thesis', and 'Key Financials'. Use bullet points where appropriate.`;
+                callGeminiApi(prompt, 'prospectus-output', 'generate-prospectus-btn');
+            });
+
+            document.getElementById('summarize-insights-btn').addEventListener('click', () => {
+                const input = document.getElementById('insights-input').value;
+                const prompt = `Act as a strategic real estate advisor. Summarize the key investment insights from the following text: "${input}". Provide a brief, actionable summary of the main points, opportunities, and risks. The output should be no more than 3-4 bullet points.`;
+                callGeminiApi(prompt, 'insights-output', 'summarize-insights-btn');
+            });
+
             renderNavigation();
             renderHero();
             renderPortfolio();
             renderServices();
             renderInsights();
+            renderUAEComparison();
             renderAiSolutions();
             renderProcess();
             renderContact();
